@@ -16,7 +16,7 @@ namespace WiiMouse
       wiimote.WiimoteChanged += wiimoteChanged;
       wiimote.Connect();
       wiimote.SetReportType(InputReport.IRAccel, true);
-      wiimote.SetLEDs(false, true, true, false);
+      wiimote.SetLEDs(++Settings.Default.index%16);
     }
 
     void updateButtonState(WiimoteLib.ButtonState bs)
@@ -33,6 +33,8 @@ namespace WiiMouse
       else if (bs.Right) --cursorPosition.X;
       if (bs.Up) ++cursorPosition.Y;
       else if (bs.Down) --cursorPosition.Y;
+      Cursor.Position = cursorPosition;
+
     }
 
     void wiimoteChanged(object sender, WiimoteChangedEventArgs e)
@@ -40,7 +42,12 @@ namespace WiiMouse
       if (InvokeRequired)
         BeginInvoke(new EventHandler<WiimoteChangedEventArgs>(wiimoteChanged), sender, e);
       else
+      {
         updateButtonState(e.WiimoteState.ButtonState);
+        Text = String.Format("{0:0.00}, {1:0.00}, {2:0.00}", e.WiimoteState.AccelState.Values.X, e.WiimoteState.AccelState.Values.Y, e.WiimoteState.AccelState.Values.Z);
+        foreach (var i in e.WiimoteState.IRState.IRSensors)
+          Console.WriteLine(i);
+      }
     }
 
     private Wiimote wiimote;
