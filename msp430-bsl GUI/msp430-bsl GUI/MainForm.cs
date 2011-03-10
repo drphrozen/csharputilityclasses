@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Linq;
 using System.Windows.Forms;
 using System.IO;
 using WinFormPlusPlus;
-using ProcessStartInfo = System.Diagnostics.ProcessStartInfo;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Drawing;
+using System.Xml.Serialization;
 
 namespace msp430_bsl_GUI
 {
@@ -19,16 +20,38 @@ namespace msp430_bsl_GUI
       var serialPorts = SerialPortInfo.GetSerialPorts();
       comPortComboBox.Items.AddRange(serialPorts);
       if (serialPorts.Length > 0)
-        comPortComboBox.SelectedIndex = 0;
+        comPortComboBox.SelectedItem = serialPorts.DefaultIfEmpty(serialPorts[0]).First(sp => sp.Name == GuiModel.SerialPortInfo.Name);
       speedComboBox.Items.AddRange(BaudRate.BaudRates);
+
       _oneShot = new OneShot(fileFormatLabel, lbl => CheckFormat(), 300);
       _oneShot.Reset();
 
       speedComboBox.SelectedIndex = 0;
       fileFormatComboBox.SelectedIndex = 0;
+
+      LoadGuiModel();
     }
 
+    private readonly string _configFile = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "config.xml");
+    private GuiModel GuiModel { get; set;}
     private readonly OneShot _oneShot;
+
+    void LoadGuiModel()
+    {
+      var serializer = new XmlSerializer(typeof(GuiModel));
+      if (File.Exists(_configFile))
+        GuiModel = serializer.Deserialize(File.OpenRead(_configFile)) as GuiModel;
+      if(GuiModel == null)
+        GuiModel = new GuiModel();
+      GuiModel.OnVerifyFailed += (s, arg) => WriteErrorLine(arg.Message);
+    }
+
+    void SaveGuiModel()
+    {
+      UpdateGuiModel();
+      var serializer = new XmlSerializer(typeof (GuiModel));
+      serializer.Serialize(File.Create(_configFile), GuiModel);
+    }
 
     private void FilenameTextBoxTextChanged(object sender, EventArgs e)
     {
@@ -73,25 +96,12 @@ namespace msp430_bsl_GUI
     {
       if (_isRunning) return;
 
-      var guiModel = new GuiModel
-      {
-        Filename = filenameTextBox.Text,
-        BaudRate = speedComboBox.SelectedItem as BaudRate,
-        SerialPortInfo = comPortComboBox.SelectedItem as SerialPortInfo,
-        FileFormat = _selectedFileFormat,
-        InvertRST = invertResetCheckBox.Checked,
-        InvertTEST = invertTestCheckBox.Checked,
-        MassErase = massEraseCheckBox.Checked,
-        EraseCheck = eraseCheckCheckBox.Checked,
-        ProgramFile = programFileCheckBox.Checked,
-        VerifyByFile = verifyFileCheckBox.Checked
-      };
-      guiModel.OnVerifyFailed += (s, arg) => WriteErrorLine(arg.Message);
-      if (guiModel.VerifyModel() == false) return;
+      UpdateGuiModel();
+      if (GuiModel.VerifyModel() == false) return;
       
       _isRunning = true;
 
-      var processInfo = new ProcessStartInfo(@"C:\Users\drphrozen\Documents\My Dropbox\Arbejde\pybsl\pybsl\bin\msp430-bsl.exe", "-h") { CreateNoWindow = true, UseShellExecute = false, RedirectStandardError = true, RedirectStandardOutput = true, Arguments = guiModel.BuildArguments() };
+      var processInfo = new ProcessStartInfo(@"C:\Users\drphrozen\Documents\My Dropbox\Arbejde\pybsl\pybsl\bin\msp430-bsl.exe", "-h") { CreateNoWindow = true, UseShellExecute = false, RedirectStandardError = true, RedirectStandardOutput = true, Arguments = GuiModel.BuildArguments() };
       var process = new Process { StartInfo = processInfo };
       process.ErrorDataReceived += ProcessErrorDataReceived;
       process.OutputDataReceived += ProcessOutputDataReceived;
@@ -117,6 +127,20 @@ namespace msp430_bsl_GUI
           _isRunning = false;
         }
       });
+    }
+
+    private void UpdateGuiModel()
+    {
+      GuiModel.Filename = filenameTextBox.Text;
+      GuiModel.BaudRate = speedComboBox.SelectedItem as BaudRate;
+      GuiModel.SerialPortInfo = comPortComboBox.SelectedItem as SerialPortInfo;
+      GuiModel.FileFormat = _selectedFileFormat;
+      GuiModel.InvertRST = invertResetCheckBox.Checked;
+      GuiModel.InvertTEST = invertTestCheckBox.Checked;
+      GuiModel.MassErase = massEraseCheckBox.Checked;
+      GuiModel.EraseCheck = eraseCheckCheckBox.Checked;
+      GuiModel.ProgramFile = programFileCheckBox.Checked;
+      GuiModel.VerifyByFile = verifyFileCheckBox.Checked;
     }
 
     void ProcessOutputDataReceived(object sender, DataReceivedEventArgs e)
@@ -146,6 +170,11 @@ namespace msp430_bsl_GUI
       consoleOutputRichTextBox.SelectionColor = c;
       consoleOutputRichTextBox.AppendText("\n" + text);
       consoleOutputRichTextBox.ScrollToCaret();
+    }
+
+    private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+    {
+      SaveGuiModel();
     }
   }
 }

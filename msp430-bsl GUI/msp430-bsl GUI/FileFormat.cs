@@ -5,7 +5,7 @@ using System.Text;
 
 namespace msp430_bsl_GUI
 {
-  class FileFormat
+  public class FileFormat
   {
     public string[] Extensions { get; private set; }
     public string Format { get; private set; }
