@@ -5,7 +5,7 @@ using System.Text;
 
 namespace msp430_bsl_GUI
 {
-  class BaudRate
+  public class BaudRate
   {
     public int Value { get; private set; }
 

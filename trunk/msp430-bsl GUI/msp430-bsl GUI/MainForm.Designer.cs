@@ -49,7 +49,7 @@
       this.fileFormatComboBox = new System.Windows.Forms.ComboBox();
       this.label3 = new System.Windows.Forms.Label();
       this.fileFormatLabel = new System.Windows.Forms.Label();
-      this.button1 = new System.Windows.Forms.Button();
+      this.programButton = new System.Windows.Forms.Button();
       this.consoleOutputRichTextBox = new System.Windows.Forms.RichTextBox();
       this.programFlowGroupBox.SuspendLayout();
       this.generalOptionsGroupBox.SuspendLayout();
@@ -253,17 +253,17 @@
       this.fileFormatLabel.Size = new System.Drawing.Size(0, 13);
       this.fileFormatLabel.TabIndex = 18;
       // 
-      // button1
+      // programButton
       // 
-      this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+      this.programButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                   | System.Windows.Forms.AnchorStyles.Right)));
-      this.button1.Location = new System.Drawing.Point(12, 258);
-      this.button1.Name = "button1";
-      this.button1.Size = new System.Drawing.Size(600, 23);
-      this.button1.TabIndex = 19;
-      this.button1.Text = "Program";
-      this.button1.UseVisualStyleBackColor = true;
-      this.button1.Click += new System.EventHandler(this.ProgramButtonClick);
+      this.programButton.Location = new System.Drawing.Point(12, 258);
+      this.programButton.Name = "programButton";
+      this.programButton.Size = new System.Drawing.Size(600, 23);
+      this.programButton.TabIndex = 19;
+      this.programButton.Text = "Program";
+      this.programButton.UseVisualStyleBackColor = true;
+      this.programButton.Click += new System.EventHandler(this.ProgramButtonClick);
       // 
       // consoleOutputRichTextBox
       // 
@@ -286,7 +286,7 @@
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.ClientSize = new System.Drawing.Size(624, 569);
       this.Controls.Add(this.consoleOutputRichTextBox);
-      this.Controls.Add(this.button1);
+      this.Controls.Add(this.programButton);
       this.Controls.Add(this.fileFormatLabel);
       this.Controls.Add(this.fileFormatComboBox);
       this.Controls.Add(this.speedComboBox);
@@ -302,6 +302,7 @@
       this.MinimumSize = new System.Drawing.Size(480, 332);
       this.Name = "MainForm";
       this.Text = "msp430-bsl GUI";
+      this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
       this.programFlowGroupBox.ResumeLayout(false);
       this.programFlowGroupBox.PerformLayout();
       this.generalOptionsGroupBox.ResumeLayout(false);
@@ -333,7 +334,7 @@
     private System.Windows.Forms.ComboBox fileFormatComboBox;
     private System.Windows.Forms.Label label3;
     private System.Windows.Forms.Label fileFormatLabel;
-    private System.Windows.Forms.Button button1;
+    private System.Windows.Forms.Button programButton;
     private System.Windows.Forms.RichTextBox consoleOutputRichTextBox;
   }
 }

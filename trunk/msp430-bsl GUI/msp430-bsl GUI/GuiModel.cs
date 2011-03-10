@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using WinFormPlusPlus;
 using System.IO;
+using System.Runtime.Serialization;
 
 namespace msp430_bsl_GUI
 {
-  class GuiModel
+  [Serializable]
+  public class GuiModel : ISerializable
   {
     public BaudRate BaudRate { get; set; }
     public SerialPortInfo SerialPortInfo { get; set; }
@@ -19,6 +20,11 @@ namespace msp430_bsl_GUI
     public bool EraseCheck { get; set; }
     public bool ProgramFile { get; set; }
     public bool VerifyByFile { get; set; }
+
+    public GuiModel()
+    {
+      
+    }
 
     public bool VerifyModel()
     {
@@ -74,6 +80,37 @@ namespace msp430_bsl_GUI
       arguments.Add("\"" + Filename + "\"");
       return string.Join(" ", arguments);
     }
-  }
 
+    public GuiModel(SerializationInfo info, StreamingContext ctxt)
+    {
+      BaudRate = BaudRate.BaudRates.DefaultIfEmpty(BaudRate.BaudRates[0]).First(br => br.Value == info.GetInt32("BaudRate"));
+      SerialPortInfo = SerialPortInfo.GetSerialPorts().DefaultIfEmpty(null).First(spi => spi.Name == info.GetString("SerialPortInfo"));
+      FileFormat = FileFormat.FileFormats.DefaultIfEmpty(FileFormat.DefaultFileFormat).First(ff => ff.Format == info.GetString("FileFormat"));
+      Filename = info.GetString("Filename");
+      InvertRST = info.GetBoolean("InvertRST");
+      InvertTEST = info.GetBoolean("InvertTEST");
+      MassErase = info.GetBoolean("MassErase");
+      EraseCheck = info.GetBoolean("EraseCheck");
+      ProgramFile = info.GetBoolean("ProgramFile");
+      VerifyByFile = info.GetBoolean("VerifyByFile");
+    }
+
+    #region ISerializable Members
+
+    public void GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+      info.AddValue("BaudRate", BaudRate != null ? BaudRate.Value : 0);
+      info.AddValue("SerialPortInfo", SerialPortInfo != null ? SerialPortInfo.Name : "");
+      info.AddValue("FileFormat", FileFormat != null ? FileFormat.Format : "");
+      info.AddValue("Filename", Filename);
+      info.AddValue("InvertRST", InvertRST);
+      info.AddValue("InvertTEST", InvertTEST);
+      info.AddValue("MassErase", MassErase);
+      info.AddValue("EraseCheck", EraseCheck);
+      info.AddValue("ProgramFile", ProgramFile);
+      info.AddValue("VerifyByFile", VerifyByFile);
+    }
+
+    #endregion
+  }
 }
